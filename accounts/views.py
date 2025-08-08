@@ -26,6 +26,7 @@ class SigninView(APIView):
         email = request.data.get('email_address')
         password = request.data.get('password')
         role = request.data.get('role')
+        refer_by = request.data.get('refer_by')
 
         if not email:
             return Response({"message": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -52,7 +53,8 @@ class SigninView(APIView):
             "access_token": str(access_token),
             "refresh_token": str(refresh),
             "user_id": user.id,
-            "role": user.role
+            "role": user.role,
+            "refer_code": user.referral_code
         }, status=status.HTTP_200_OK)
 
 
@@ -308,22 +310,18 @@ class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-        serializer = UserSerializer(user)
-       
+        serializer = UserSerializer(request.user)
         return Response({'data': serializer.data}, status=status.HTTP_200_OK)
 
     def patch(self, request):
-        user = request.user
-        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({'data': serializer.data}, status=status.HTTP_200_OK)
         return Response({'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
-        user = request.user
-        serializer = UserSerializer(user, data=request.data)
+        serializer = UserSerializer(request.user, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({'data': serializer.data}, status=status.HTTP_200_OK)

@@ -3,6 +3,9 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 import shortuuid
+import phonenumbers
+from phonenumbers.phonenumberutil import NumberParseException
+from django.core.exceptions import ValidationError
 
 # ============================
 # Custom User Manager
@@ -14,12 +17,15 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         
         full_name = extra_fields.get("full_name")
+
         if not full_name:
             raise ValueError(_("The Full Name field must be set"))
         
         terms_agreed = extra_fields.get("terms_agreed")
         if not terms_agreed:
             raise ValueError(_("You must agree to the Terms of Service."))
+        
+        refer_by = extra_fields.get("refer_by")
 
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -55,8 +61,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=150)
     avatar = models.ImageField(upload_to="profile/", blank=True, null=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
+   
+    # Phone number fields
     phone_country_code = models.CharField(max_length=5, blank=True, null=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    
     role = models.CharField(max_length=20, choices=UserRole.choices, default=UserRole.VIEWER)
     otp = models.CharField(max_length=6, blank=True)
     otp_expired = models.DateTimeField(null=True, blank=True)
@@ -67,6 +76,24 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone.now)
     terms_agreed = models.BooleanField(default=False)
 
+    refer_by = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='referrals',
+        help_text='User who referred this user',
+    )
+
+    referral_code = models.CharField(
+        max_length=10,
+        unique=True,
+        editable=False,
+        blank=True,
+        null=True,
+        help_text="Unique referral code for the user"
+    )
+
     objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
@@ -74,3 +101,26 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    def clean(self):
+        if self.phone_country_code and self.phone_number:
+            cc = self.phone_country_code.lstrip("+").strip()
+            pn = self.phone_number.strip()
+            try:
+                parsed = phonenumbers.parse(f"+{cc}{pn}", None)
+            except NumberParseException:
+                raise ValidationError({"phone_number": "Invalid phone number format."})
+
+            if not phonenumbers.is_valid_number(parsed):
+                raise ValidationError({"phone_number": "Invalid phone number for the given country code."})
+
+    def save(self, *args, **kwargs):
+        if not self.referral_code:
+            self.referral_code = self.generate_unique_referral_code()
+        super().save(*args, **kwargs)
+
+    def generate_unique_referral_code(self):
+        while True:
+            code = shortuuid.ShortUUID().random(length=8).upper()
+            if not User.objects.filter(referral_code=code).exists():
+                return code

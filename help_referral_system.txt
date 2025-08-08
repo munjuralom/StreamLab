@@ -1,0 +1,106 @@
+#.............models.py.................
+import uuid
+from django.conf import settings
+from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.utils.crypto import get_random_string
+from .managers import UserManager  # assuming you have a custom manager
+
+class User(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(unique=True)
+    full_name = models.CharField(max_length=255)
+    phone_country_code = models.CharField(max_length=10, blank=True, null=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+
+    role = models.CharField(max_length=50, default="viewer")
+    is_affiliate = models.BooleanField(default=False)
+
+    # Referral system
+    referral_code = models.CharField(max_length=10, unique=True, blank=True, null=True)
+    refer_by = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="referrals")
+
+    # Status & Permissions
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    # Security
+    otp = models.CharField(max_length=6, blank=True, null=True)
+    otp_expired = models.DateTimeField(blank=True, null=True)
+    reset_secret_key = models.CharField(max_length=255, blank=True, null=True)
+
+    # Dates
+    date_joined = models.DateTimeField(auto_now_add=True)
+    terms_agreed = models.BooleanField(default=False)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["full_name"]
+
+    def save(self, *args, **kwargs):
+        if not self.referral_code:
+            # Generate a unique referral code
+            self.referral_code = self.generate_unique_code()
+        super().save(*args, **kwargs)
+
+    def generate_unique_code(self):
+        """Generate a unique referral code."""
+        code = get_random_string(length=8).upper()
+        while User.objects.filter(referral_code=code).exists():
+            code = get_random_string(length=8).upper()
+        return code
+
+    @property
+    def referral_link(self):
+        """Return the full referral registration link."""
+        return f"{settings.FRONTEND_URL}/signup?ref={self.referral_code}"
+
+    def __str__(self):
+        return self.email
+
+
+#.............views.py..........
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from .models import User
+from .serializers import UserSignupSerializer
+
+class SignupView(APIView):
+    def post(self, request):
+        referral_code = request.data.get("referral_code")
+        refer_by_user = None
+
+        if referral_code:
+            refer_by_user = get_object_or_404(User, referral_code=referral_code)
+
+        serializer = UserSignupSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            if refer_by_user:
+                user.refer_by = refer_by_user
+                user.save()
+            return Response({"message": "Signup successful"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+#............serializers.py............
+from rest_framework import serializers
+from .models import User
+
+class UserSignupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "full_name", "password", "phone_country_code", "phone_number", "role", "terms_agreed"]
+        extra_kwargs = {"password": {"write_only": True}}
+
+    def create(self, validated_data):
+        password = validated_data.pop("password")
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
