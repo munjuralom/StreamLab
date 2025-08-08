@@ -1,0 +1,5 @@
+UserProfileView
+ResetPasswordView
+RequestPasswordResetView
+VerifyOTPView
+SendOTPView
