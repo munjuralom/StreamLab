@@ -1,31 +1,29 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from .models import User, Profile
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import User, UserRole
 
-class CustomUserAdmin(UserAdmin):
-    model = User
-    list_display = ('email', 'id', 'full_name', 'role', 'is_affiliate', 'is_active', 'is_staff', 'terms_agreed', 'date_joined')
-    list_filter = ('role', 'is_affiliate', 'is_active', 'is_staff')
-    search_fields = ('email', 'full_name')
-    ordering = ('-date_joined',)
+
+@admin.register(User)
+class UserAdmin(BaseUserAdmin):
+    # Fields to display in list view
+    list_display = ("email", "full_name", "role", "is_active", "is_staff", "date_joined")
+    list_filter = ("role", "is_active", "is_staff", "is_superuser", "terms_agreed", "is_affiliate")
+    search_fields = ("email", "full_name", "phone_number")
+    ordering = ("-date_joined",)
+
+    # For editing/creating users
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
-        ('Personal Info', {'fields': ('full_name',)}),
-        ('Roles & Permissions', {'fields': ('role', 'is_affiliate', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Important dates', {'fields': ('last_login', 'date_joined')}),
-        ('OTP Info', {'fields': ('otp', 'otp_expired', 'reset_secret_key')}),
-        ('Terms & Agreed', {'fields': ('terms_agreed',)}),
+        (None, {"fields": ("email", "password")}),
+        ("Personal Info", {"fields": ("full_name", "avatar", "phone_country_code", "phone_number")}),
+        ("Role & Permissions", {"fields": ("role", "is_affiliate", "is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
+        ("Security & OTP", {"fields": ("otp", "otp_expired", "reset_secret_key")}),
+        ("Important Dates", {"fields": ("last_login", "date_joined")}),
+        ("Terms", {"fields": ("terms_agreed",)}),
     )
+
     add_fieldsets = (
         (None, {
-            'classes': ('wide',),
-            'fields': ('email', 'full_name', 'role', 'password1', 'password2', 'is_affiliate', 'is_active', 'is_staff')}
-        ),
+            "classes": ("wide",),
+            "fields": ("email", "full_name", "password1", "password2", "role", "terms_agreed"),
+        }),
     )
-
-class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_number', 'country')
-    search_fields = ('user__email', 'phone_number', 'country')
-
-admin.site.register(User, CustomUserAdmin)
-admin.site.register(Profile, ProfileAdmin)
