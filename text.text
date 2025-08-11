@@ -3,3 +3,21 @@ ResetPasswordView
 RequestPasswordResetView
 VerifyOTPView
 SendOTPView
+
+
+Request Body like this:
+
+{
+    "title": "The Last Journey",
+    "year": 2025,
+    "logline": "A lone traveler discovers a hidden world while on his final expedition.",
+    "genre": "sci-fi",
+    "duration": 128,
+    "thumbnail": "https://res.cloudinary.com/demo/image/upload/v1723400000/last_journey_thumbnail.jpg",
+    "trailer": "https://res.cloudinary.com/demo/video/upload/v1723400000/last_journey_trailer.mp4",
+    "full_film": "https://res.cloudinary.com/dubsxif8w/video/upload/v1754738504/samples/cld-sample-video.mp4",
+    "rent_price": 4.99,
+    "buy_price": 14.99,
+    "currency": "USD",
+    "clicks": 0
+}
