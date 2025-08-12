@@ -14,9 +14,6 @@ from pathlib import Path
 
 # for cloudinary
 import cloudinary
-import cloudinary.uploader
-import cloudinary.api
-
 cloudinary.config( 
   cloud_name = "dubsxif8w",
   api_key = "344857482292291",
@@ -143,11 +140,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
 
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'assets'
-MEDIA_ROOT = BASE_DIR / 'media'
+# MEDIA_URL = '/media/'
+
+# STATICFILES_DIRS = [BASE_DIR / 'static']
+# STATIC_ROOT = BASE_DIR / 'assets'
+# MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Default primary key field type

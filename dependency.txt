@@ -1,0 +1,33 @@
+# Need to install
+# pip install django-storages boto3 cloudinary django-cloudinary-storage
+
+
+#setup settings.py
+
+    import os
+
+    INSTALLED_APPS = [
+        # ...
+        'storages',
+        'cloudinary',
+        'cloudinary_storage',
+    ]
+
+    # Cloudinary config for images & small videos
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': 'your_cloud_name',
+        'API_KEY': 'your_api_key',
+        'API_SECRET': 'your_api_secret',
+    }
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'  # default for images/videos
+
+    # Amazon S3 config for full films
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_REGION_NAME = 'us-east-1'  # example region
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
+    # S3 URL prefix for full films
+    FULL_FILM_S3_URL_PREFIX = f'https://{AWS_S3_CUSTOM_DOMAIN}/full_films/'
+

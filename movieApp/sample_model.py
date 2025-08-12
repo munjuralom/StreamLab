@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 import shortuuid
-from cloudinary.models import CloudinaryField
 
 # ---------- helpers ----------
 def generate_short_uuid() -> str:
@@ -46,15 +45,12 @@ class Film(models.Model):
     year = models.PositiveSmallIntegerField(null=True, blank=True)
     logline = models.CharField(max_length=280, blank=True)
     type = models.CharField(max_length=20, choices=FilmType.choices)
-    genre = models.ManyToManyField(Genre, blank=True)  # Changed to ManyToManyField
+    genre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True, blank=True)
 
-    # Cloudinary uploads (separate folders)
-    # thumbnail = models.FileField(upload_to="thumbnail/", blank=True, null=True)
-    # trailer = models.FileField(upload_to="trailer/", blank=True, null=True)
-    # full_film = models.FileField(upload_to="full_film/", blank=True, null=True)
-    thumbnail = CloudinaryField('thumbnail', blank=True, null=True)
-    trailer = CloudinaryField('trailer', blank=True, null=True)
-    full_film = CloudinaryField('full_film', blank=True, null=True)
+    # Cloud storage URLs instead of file fields
+    thumbnail_url = models.URLField(max_length=500, blank=True, null=True, help_text="Poster or thumbnail URL")
+    trailer_url = models.URLField(max_length=500, blank=True, null=True, help_text="Trailer video URL")
+    full_film_url = models.URLField(max_length=500, blank=True, null=True, help_text="Full movie video URL")
 
     status = models.CharField(max_length=12, choices=FilmStatus.choices, default=FilmStatus.REVIEW)
     duration_s = models.PositiveIntegerField(default=0, help_text="Duration in seconds")
@@ -76,7 +72,7 @@ class Film(models.Model):
         indexes = [
             models.Index(fields=["status"]),
             models.Index(fields=["type"]),
-            # ManyToManyFields are not indexed like this; you can add indexes on Genre model if needed
+            models.Index(fields=["genre"]),
         ]
 
     def __str__(self):

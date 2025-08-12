@@ -1,6 +1,7 @@
+# urls.py
 from django.urls import path
-from .views import MovieUploadView
+from .views import FilmUploadAPIView
 
 urlpatterns = [
-    path('upload-movie/', MovieUploadView.as_view(), name='upload-movie'),
+    path('upload/', FilmUploadAPIView.as_view(), name='film-upload'),
 ]
