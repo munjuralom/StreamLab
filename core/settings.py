@@ -14,6 +14,9 @@ from pathlib import Path
 
 # for cloudinary
 import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
 cloudinary.config( 
   cloud_name = "dubsxif8w",
   api_key = "344857482292291",
@@ -60,6 +63,15 @@ INSTALLED_APPS = [
     'accounts',
     'movieApp',
 ]
+
+
+# Cloudinary credentials
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'your_cloud_name',
+    'API_KEY': 'your_api_key',
+    'API_SECRET': 'your_api_secret'
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # CustomUser Model
 AUTH_USER_MODEL = 'accounts.User'
@@ -186,10 +198,10 @@ CSRF_TRUSTED_ORIGINS = ['https://equal-evidently-terrier.ngrok-free.app']
 
 #---------
 # Cloudinary credentials
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dubsxif8w',
-    'API_KEY': '344857482292291',
-    'API_SECRET': 'w_HqV196OdrQZYs7LGzQUFFOsBc',
-}
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': 'dubsxif8w',
+#     'API_KEY': '344857482292291',
+#     'API_SECRET': 'w_HqV196OdrQZYs7LGzQUFFOsBc',
+# }
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

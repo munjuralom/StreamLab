@@ -22,8 +22,24 @@ Request Body like this:
 }
 
 
-,filmmaker ,title ,year ,logline ,type ,genre ,thumbnail_url ,trailer_url ,full_film_url ,status ,duration_s ,currency ,rent_price ,rental_hours ,buy_price ,created_at 
-    updated_at 
-    published_at 
-    views 
-    total_earning 
+
+filmmaker 
+title 
+year 
+logline 
+type 
+genre 
+thumbnail_url 
+trailer_url 
+full_film_url 
+status 
+duration_s 
+currency 
+rent_price 
+rental_hours 
+buy_price 
+created_at 
+updated_at 
+published_at 
+views 
+total_earning 
