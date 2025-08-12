@@ -1,41 +1,50 @@
 # from rest_framework.views import APIView
+# from rest_framework.permissions import IsAuthenticated
 # from rest_framework.response import Response
 # from rest_framework import status
-# from rest_framework.permissions import IsAuthenticated
 # from .serializers import FilmSerializer
 
-# class FilmUploadAPIView(APIView):
+# class FilmUploadView(APIView):
 #     permission_classes = [IsAuthenticated]
 
-#     def post(self, request, *args, **kwargs):
-#         data = request.data.copy()
-#         data['filmmaker'] = request.user.id  # Set logged-in user as filmmaker
+#     def post(self, request):
 
-#         # return Response(data)
-#         serializer = FilmSerializer(data=data)
+#         # title = request.data.get('title')
+#         # year = request.data.get('year')
+#         # logline = request.data.get('logline')
+#         # type = request.data.get('type')
+#         # genre = request.data.get('genre')
+#         # duration_s = request.data.get('duration_s')
+#         # rent_price = request.data.get('rent_price')
+#         # buy_price = request.data.get('buy_price')
+#         # thumbnail = request.FILES.get('thumbnail')
+#         # return Response(thumbnail)
+#         serializer = FilmSerializer(data=request.data)
 #         if serializer.is_valid():
-#             film = serializer.save()
+#             # Pass filmmaker here (assign request.user)
+#             film = serializer.save(filmmaker=request.user)
 #             return Response(FilmSerializer(film).data, status=status.HTTP_201_CREATED)
-#         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from .serializers import FilmSerializer
 
-class FilmUploadAPIView(APIView):
+class FilmUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        data = request.data.copy()
-        data['filmmaker'] = request.user.id
+        # Debug print (optional)
+        print("DATA:", request.data)
+        print("FILES:", request.FILES)
 
-        serializer = FilmSerializer(data=data)
+        serializer = FilmSerializer(data=request.data)
         if serializer.is_valid():
-            film = serializer.save()
+            film = serializer.save(filmmaker=request.user)
             return Response(FilmSerializer(film).data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

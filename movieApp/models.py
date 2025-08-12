@@ -52,6 +52,8 @@ class Film(models.Model):
     # thumbnail = models.FileField(upload_to="thumbnail/", blank=True, null=True)
     # trailer = models.FileField(upload_to="trailer/", blank=True, null=True)
     # full_film = models.FileField(upload_to="full_film/", blank=True, null=True)
+    
+    # Cloudinary uploads (separate folders)
     thumbnail = CloudinaryField('thumbnail', blank=True, null=True)
     trailer = CloudinaryField('trailer', blank=True, null=True)
     full_film = CloudinaryField('full_film', blank=True, null=True)
